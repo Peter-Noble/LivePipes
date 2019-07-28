@@ -1,0 +1,434 @@
+<!<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+
+    <!-- Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+
+    <link rel="stylesheet" href="/static/theme.css"></script>
+
+    <title>LivePipes</title>
+</head>
+
+<body>
+    <div id="app">
+
+        <nav class="navbar navbar-expand-sm navbar-dark fixed-top">
+            <a class="navbar-brand" href="#"><i class="fas fa-sitemap"></i> LivePipes</a>
+            <!-- Links
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link 1</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link 2</a>
+                </li>
+            </ul> -->
+        </nav>
+
+        <div class="container" style="margin-top:80px">
+            <div class="row">
+                <div class="left col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Users</h4>
+                            <div class="d-flex justify-content-center">
+                                <div id="user-refine" class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-info" v-on:click="users_yp_only = !users_yp_only" :class="{ active: users_yp_only }">YP only</button>
+                                    <button type="button" class="btn btn-outline-info" v-on:click="users_has_projects = !users_has_projects" :class="{ active: users_has_projects }">Has projects</button>
+                                    <button type="button" class="btn btn-outline-info" v-on:click="users_is_active = !users_is_active" :class="{ active: users_is_active }">Active</button>
+                                </div>
+                            </div>
+
+                            <ul class="list-group">
+                                <li class="list-group-item" v-for="user in filtered_users">
+                                    <div class="row">
+                                        <div class="col-md-5" data-toggle="modal" href="#userModal" style="cursor: pointer">
+                                            !{ user.first_name } !{ user.surname }
+                                        </div>
+                                        <div class="col-md-2" data-toggle="modal" href="#userModal" style="cursor: pointer">
+                                            <span class="badge badge-info badge-pill">!{ user.num_projects }</span>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <button type="button" class="btn btn-outline-success"  v-on:click="user.is_active = !user.is_active" :class="{ active: user.is_active }">Active</button>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="left col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Summary</h4>
+                            <p>Database: {{ db_path }}</p>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width:40%">
+                                    Free Space
+                                </div>
+                                <div class="progress-bar bg-warning" style="width:10%">
+                                    Warning
+                                </div>
+                                <div class="progress-bar bg-danger" style="width:20%">
+                                    Danger
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="left col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Actions</h4>
+                                <button type="button" class="btn btn-outline-info btn-block" data-toggle="modal" data-target="#newUserModal">New user</button>
+                                <button type="button" class="btn btn-outline-info btn-block" data-toggle="modal" data-target="#deleteUserModal">Delete user</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="left col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Projects</h4>
+                            <div class="d-flex justify-content-center">
+                                <div id="user-refine" class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-info" data-toggle="button">YP only</button>
+                                    <button type="button" class="btn btn-outline-info" data-toggle="button">Incomplete</button>
+                                    <button type="button" class="btn btn-outline-info" data-toggle="button">Active users</button>
+                                </div>
+                            </div>
+                            <div class="list-head">
+                                <div class="row">
+                                        <div class="col-md-3">
+                                            <h5>Project name</h5>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <h5>User(s)</h5>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <h5>Project directory</h5>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <h5>Status</h5>
+                                        </div>
+                                </div>
+                            </div>
+                            <ul class="list-group">
+                                <a data-toggle="modal" href="#projectModal" class="list-group-item list-group-item-action" v-for="project in filtered_projects">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            !{ project.name }
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div v-for="user in project.users">
+                                                !{ user.first_name } !{ user.surname },
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
+                                            file://path
+                                        </div>
+                                        <div class="col-md-2" style="text-align:center">
+                                            <i v-if="project.status == 'Finished'" class="fas fa-check-square" style="color:#28a745"></i>
+                                            <i v-else-if="project.status == 'In progress'" class="fas fa-square" style="color:#dc3545"></i>
+                                        </div>
+                                    </div>
+                                </a>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="left col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Render queue</h4>
+                            <div class="list-head">
+                                <div class="row">
+                                        <div class="col-md-4">
+                                            <h5>ID</h5>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <h5>Progress</h5>
+                                        </div>
+                                </div>
+                            </div>
+                            <ul class="list-group">
+                                <a data-toggle="modal" href="#renderModal" class="list-group-item list-group-item-action" v-for="item in render_queue">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            !{ item.job_id }
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:30%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p>!{ message } Updated <span class="badge badge-info">New!</span></p>
+
+        <div class="modal" id="userModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">User modal</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        Modal body..
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="projectModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Project modal</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        Modal body..
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="renderModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Render modal</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        Modal body..
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="newUserModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">New user</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <form action="/new_user" method="post" v-on:submit.prevent>
+                            <div class="form-group">
+                                <label for="FirstName">First name</label>
+                                <input type="text" class="form-control" name="firstname" id="FirstName" placeholder="First name">
+                            </div>
+                            <div class="form-group">
+                                <label for="Surname">Surname</label>
+                                <input type="text" class="form-control" name="lastname" id="Surname" placeholder="Surname">
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="isYP">
+                                <label class="form-check-label" for="isYP">Is YP</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary" v-on:click="newUserSubmit()" data-dismiss="modal">Submit</button>
+                        </form>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="deleteUserModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Delete user</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+
+                        <li class="list-group-item" v-for="user in users">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    !{ user.first_name } !{ user.surname }
+                                </div>
+                                <div class="col-md-5">
+                                    <button type="button" class="btn btn-outline-danger" v-on:click="deleteUserSubmit(user)">Delete</button>
+                                </div>
+                            </div>
+                        </li>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                message: "Hello Vue!",
+                users: [],
+                projects: [],
+                render_queue: [
+                    { job_id: 0,
+                      }
+                ],
+                users_yp_only: true,
+                users_has_projects: false,
+                users_is_active: false,
+                projects_yp_only: true,
+                projects_is_incomplete: false,
+                projects_is_active_user: false,
+            },
+            computed: {
+                filtered_users() {
+                    return this.users.filter(user => {
+                        $valid = true;
+                        if (this.users_yp_only) {
+                            $valid &= user.is_YP;
+                        };
+                        if (this.users_has_projects) {
+                            $valid &= user.num_projects > 0;
+                        };
+                        if (this.users_is_active) {
+                            $valid &= user.is_active;
+                        }
+                        return $valid
+                    })
+                },
+                filtered_projects() {
+                    return this.projects.filter(project => {
+                        $valid = true;
+                        if (this.projects_yp_only) {
+                            // TODO
+                        };
+                        if (this.projects_is_incomplete) {
+                            // TODO
+                        };
+                        if (this.projects_is_active_user) {
+                            // TODO
+                        };
+                        return $valid
+                    })
+                }
+            },
+            methods: {
+                newUserSubmit() {
+                    $.post("/new_user",
+                        {
+                            first_name: $("#FirstName")[0].value,
+                            surname: $("#Surname")[0].value,
+                            is_yp: $("#isYP").is(":checked")
+                        }
+                    );
+                },
+                deleteUserSubmit(user) {
+                    console.log(user);
+                    $.post("/delete_user",
+                        {
+                            user_id: user.id
+                        }
+                    );
+                }
+            },
+            delimiters: ["!{", "}"]
+        })
+
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            socket.emit('client_connected', {data: 'New client!'});
+        });
+
+        socket.on('user list', function(data) {
+            app.users = JSON.parse(data);
+        });
+
+        socket.on('project list', function(data) {
+            app.projects = JSON.parse(data);
+        });
+
+    </script>
+
+</body>

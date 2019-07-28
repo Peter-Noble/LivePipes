@@ -1,0 +1,58 @@
+h4 {
+    text-align: center
+}
+
+h5 {
+    font-size: 14pt;
+}
+
+body {
+    background-color: rgb(18, 16, 38);
+    color: rgb(180, 180, 200);
+}
+
+.card {
+    background-color: rgb(39, 41, 61);
+    margin-bottom: 20px
+}
+
+.card-title {
+    border-bottom: 1px solid rgb(92, 93, 112);
+    padding-bottom: 10px
+}
+
+.navbar {
+    background-color: rgb(18, 16, 38);
+    border-bottom: 1px solid rgb(66, 67, 81)
+}
+
+.list-head {
+    background-color: rgb(39, 41, 61);
+    padding: 14px;
+    padding-bottom: 4px;
+}
+
+.list-group-item {
+    background-color: rgb(39, 41, 61);
+    color: rgb(180, 180, 200);
+    border: 1px solid rgb(66, 67, 81)
+}
+
+.list-group-item:hover {
+    background-color: rgb(50, 52, 78);
+    color: rgb(196, 196, 212);
+}
+
+.list-group-item:focus {
+    background-color: rgb(60, 62, 93);
+    color: rgb(211, 211, 223);
+}
+
+.modal-content {
+    background-color: rgb(39, 41, 61);
+    color: rgb(180, 180, 200);
+}
+
+#user-refine {
+    margin-bottom: 10px
+}
