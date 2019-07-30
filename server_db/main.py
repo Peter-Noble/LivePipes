@@ -1,5 +1,5 @@
 from dbms import create_database, Base
-from db_schema import User, Project, ProjectOwner
+from db_schema import User, Project, ProjectOwner, Version
 from flask import Flask, render_template, send_file, request
 from flask_socketio import send, emit, SocketIO
 import json
@@ -121,9 +121,26 @@ def new_project():
     session.add(new_project_owner)
     session.commit()
     result = new_project.to_dict()
+    new_project_version = Version(project_id=new_project.id,
+                                  version_number=1)
+    session.add(new_project_owner)
+    session.commit()
     session.close()
     emit_project_list()
     return result
+
+@app.route("/new_version", methods=["POST"])
+def new_version():
+    session = Session()
+    data = dict(request.form)
+    new_project_version = Version(project_id=data["project_id"],
+                                  version_number=data["version_number"],
+                                  file_path=data["file_path"])
+    session.add(new_project_version)
+    session.commit()
+    session.close()
+    return ""
+
 
 @app.route("/delete_user", methods=["POST"])
 def delete_user():

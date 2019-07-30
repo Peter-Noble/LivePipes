@@ -34,7 +34,6 @@ class Project(Base):
     name = Column(String)
     category = Column(Integer) #  0 - Blender
     sw_version = Column(String)
-    file_name = Column(String)
     dir_name = Column(String)
 
     def __repr__(self):
@@ -45,7 +44,21 @@ class Project(Base):
                 "name": self.name,
                 "category": self.category,
                 "sw_version": self.sw_version,
-                "dir_name": self.dir_name,
+                "dir_name": self.dir_name}
+
+
+class Version(Base):
+    __tablename__ = "versions"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer)
+    version_number = Column(Integer)
+    file_name = Column(String)
+
+    def to_dict(self):
+        return {"id": self.id,
+                "project_id": self.project_id,
+                "version_number": self.version_number,
                 "file_name": self.file_name}
 
 

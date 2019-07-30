@@ -48,7 +48,7 @@ class LivePipesPanel(bpy.types.Panel):
             row.label(text="Current project: {}".format(lp.current_project))
         else:
             row.label(text="No project open")
-            
+
         row.operator("lp.select_project", text="", icon="DISCLOSURE_TRI_DOWN")
 
         row = layout.row()
@@ -83,7 +83,7 @@ def update_current_user(self, context):
     for user in ul:
         if user[0] == lp.user_list:
             lp.current_user = user[1]
-     
+
 
 def project_list(self, context):
     lp = context.scene.LivePipes
@@ -99,7 +99,7 @@ def project_list(self, context):
         project_list = [(str(-1), "<Select project>", "")] + project_list
 
     return project_list
-            
+
 def update_current_project(self, context):
     pl = project_list(self, context)
     lp = context.scene.LivePipes
@@ -173,11 +173,26 @@ class LivePipesSelectProject(bpy.types.Operator):
         bpy.context.window_manager.popup_menu(select_project_popup, title="Select project", icon='INFO')
 
         return {"FINISHED"}
-    
+
     @classmethod
     def poll(self, context):
         lp = context.scene.LivePipes
         return lp.current_user.strip() != "" and lp.current_user != "<Select user>"
+
+
+def save_all_images():
+    """Blender doesn't automatically save all the textures that have been painted
+    and they will be deleted when the project is saved"""
+    for image in bpy.data.images:
+        if image.is_dirty:
+            if image.filepath == "":
+                image.save_render(bpy.path.abspath("//{}.png".format(image.name)))
+            else:
+                image.save()
+
+def project_location():
+
+    return ""
 
 
 class LivePipesNewProject(bpy.types.Operator):
@@ -186,7 +201,7 @@ class LivePipesNewProject(bpy.types.Operator):
 
     def execute(self, context):
         lp = context.scene.LivePipes
-        
+
         if lp.new_project_name.strip() != "":
             sw_version = "{}.{}".format(bpy.app.version[0], bpy.app.version[1])
             r = requests.post(url=lp.server_address + "/new_project",
@@ -211,9 +226,24 @@ class LivePipesNewProject(bpy.types.Operator):
                 lp.new_project_name = ""
 
                 bpy.ops.wm.save_as_mainfile(filepath=full_file_path)
-                
+
+                save_all_images()
+
                 lp.current_project = np["id"]
                 lp.current_project_id = np["name"]
+
+        return {"FINISHED"}
+
+
+class LivePipesSaveProject(bpy.types.Operator):
+    bl_idname = "lp.save_project"
+    bl_label = "Save project"
+
+    def execute(self, context):
+        lp = context.scene.LivePipes
+
+        save_all_images()
+        bpy.ops.wm.save_mainfile()
 
         return {"FINISHED"}
 
